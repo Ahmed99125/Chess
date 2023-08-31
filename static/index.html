@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400&display=swap" rel="stylesheet">
+    <script type="module" src="./src/moves.js" defer></script>
+    <script type="module" src="./src/startgame.js" defer></script>
+    <script type="module" src="./src/script.js" defer></script>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <audio class=" audio piece-move" src="./sounds/piece-move.mp3"></audio>
+    <audio class=" audio piece-capture" src="./sounds/piece-capture.mp3"></audio>
+    <dialog class="checkmate-panel end-panel">
+        <div class="wave">
+            <h2 class="who-won">White Won</h2>
+        </div>
+        <div class="cont">
+            <h2 class="how-won">By Checkmate</h2>
+            <div class="buttons-cont">
+                <button class="replay">+</button>
+                <button class="home">H</button>
+            </div>
+        </div>
+    </dialog>
+    <dialog class="draw-panel end-panel">
+        <div class="wave">
+            <h2 class="who-won">Draw</h2>
+        </div>
+        <div class="cont">
+            <h2 class="how-won">By Stalemate</h2>
+            <div class="buttons-cont">
+                <button class="replay">+</button>
+                <button class="home">H</button>
+            </div>
+        </div>
+    </dialog>
+    <dialog class="promotion-panel">
+        <div class="white-pieces">
+            <img src="./images/Chess_qlt45.svg" alt="queen" data="q">
+            <img src="./images/Chess_rlt45.svg" alt="rook" data="r">
+            <img src="./images/Chess_nlt45.svg" alt="knight" data="k">
+            <img src="./images/Chess_blt45.svg" alt="bishop" data="b">
+        </div>
+        <div class="black-pieces">
+            <img src="./images/Chess_qdt45.svg" alt="queen" data="q">
+            <img src="./images/Chess_rdt45.svg" alt="rook" data="r">
+            <img src="./images/Chess_ndt45.svg" alt="knight" data="k">
+            <img src="./images/Chess_bdt45.svg" alt="bishop" data="b">
+        </div>
+    </dialog>
+    <section class="chess-board">
+
+    </section>
+    <section class="data-panel">
+        <div class="player2-place player-place">
+            <div class="timer black">
+                <h1 class="time"><span class="hours"></span><span class="minutes"></span><span class="seconds"></span></h1>
+            </div>
+            <p class="name">Player 2</p>
+        </div>
+        <div class="player1-place player-place">
+            <p class="name">Player 1</p>
+            <div class="timer white">
+                <h1 class="time"><span class="hours"></span><span class="minutes"></span><span class="seconds"></span></h1>
+            </div>
+        </div>
+    </section>
+    
+</body>
+
+</html>
