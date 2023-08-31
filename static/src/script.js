@@ -50,12 +50,12 @@ let blackCastle = [false, false, false]
 const checkMatePanel = document.querySelector(".checkmate-panel")
 const drawPanel = document.querySelector(".draw-panel")
 const replayButton = document.querySelector(".replay")
-let hours1 = 0
-let hours2 = 0
-let minutes1 = 1
+let hours1 = 1
+let hours2 = 1
+let minutes1 = 0
 let minutes2 = 0
 let seconds1 = 0
-let seconds2 = 1
+let seconds2 = 0
 let whiteTime = document.querySelector(".white").querySelector(".time")
 let blackTime = document.querySelector(".black").querySelector(".time")
 let totalSecs1 = hours1 * 3600 + minutes1 * 60 + seconds1
@@ -259,7 +259,7 @@ const initiateMoves = (x, y) => {
             checkCastling()
         }
 
-        validateMove(x, y, possibleSquares)
+        validateMove(x, y, possibleSquares, player)
 
         addEffects()
     }
@@ -269,30 +269,50 @@ const isEndGame = () => {
     let arr = []
     let numberOfMoves = 0
     let kingPos = null
+    let turn = 0
+    if (player == 1) turn = 2
+    else turn = 1
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
             let piece = board[i][j]
-            if ((piece[0] == 'w' && player == 1) || (piece[0] == 'b' && player == 2)) {
+            if ((piece[0] == 'w' && player != 1) || (piece[0] == 'b' && player != 2)) {
+                let color = piece[0]
                 piece = piece.substring(1)
-                let a = i
-                let b = j
                 if (piece == 'p') {
-                    a = 7 - i
-                    b = 7 - j
+                    arr = pawnThreat(color , i, j, player)
+
+                    if (moves.isValid(i + 1, j) && board[i + 1][j] == '.') {
+                        arr.push([i + 1, j])
+                    }
+                
+                    if (moves.isValid(i + 2, j) && i == 6 && board[i + 2][j] == '.' && board[i + 1][j] == '.') {
+                        arr.push([i + 2, j])
+                    }
+
+                    validateMove(j, i, arr, turn)
+                    numberOfMoves += arr.length
                 }
-                arr = callMoves(piece, b, a)
-                validateMove(j, i, arr)
-                if (piece == 'k') kingPos = [i, j]
+                else {
+                    arr = callMoves(piece, j, i)
+                }
+                validateMove(j, i, arr, turn)
+                if (color == 'b') kingPos = [0, 4]
+                else kingPos = [0, 3]
+                console.log(color, piece)
+                console.log(arr)
+                console.log(i, j)
                 numberOfMoves += arr.length
             }
-        }
+        }   
     }
 
+    console.log(numberOfMoves)
+    console.log(kingPos)
     if (numberOfMoves == 0) {
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
                 if (player == 1) {
-                    if (threatBoardBlack[kingPos[0]][kingPos[1]] != '.') {
+                    if (threatBoardWhite[kingPos[0]][kingPos[1]] != '.') {
                         return 1
                     }
                     else {
@@ -300,7 +320,7 @@ const isEndGame = () => {
                     }
                 }
                 else {
-                    if (threatBoardWhite[kingPos[0]][kingPos[1]] != '.') {
+                    if (threatBoardBlack[kingPos[0]][kingPos[1]] != '.') {
                         return 1
                     }
                     else {
@@ -337,8 +357,8 @@ const checkCastling = () => {
 
     for (let i = 0; i < 2; i++, y--) {
         if ((board[x][y] != '.' && board[x][y][1] != 'k') || threatBoard[x][y] != '.') {
-            console.log(threatBoard)
-            console.log("no leftCastle")
+            // console.log(threatBoard)
+            // console.log("no leftCastle")
             leftCastle = false
             break
         }
@@ -348,9 +368,9 @@ const checkCastling = () => {
 
     for (let i = 0; i < 2; i++, y++) {
         if ((board[x][y] != '.' && board[x][y][1] != 'k') || threatBoard[x][y] != '.') {
-            console.log(threatBoard)
-            console.log(x, y)
-            console.log("no rightCastle")
+            // console.log(threatBoard)
+            // console.log(x, y)
+            // console.log("no rightCastle")
             rightCastle = false
             break
         }
@@ -431,8 +451,31 @@ const makeMove = (e, x, y) => {
     checkPromote()
 }
 
+const clearTimer = (interval, text) => {
+    clearInterval(interval)
+    interval2 = setInterval(() => {
+        blackTime.children[0].innerText = Math.floor(totalSecs2 / 3600).toString() + ":"
+        let rem = totalSecs2 - Math.floor(totalSecs2 / 3600) * 3600
+        blackTime.children[1].innerText = Math.floor(rem / 60).toString() + ":"
+        rem = rem - Math.floor(rem / 60) * 60
+        blackTime.children[2].innerText = Math.floor(rem)
+        if (totalSecs2 == 0) {
+            clearInterval(interval1)
+            clearInterval(interval2)
+            checkMatePanel.children[0].children[0].innerText = text
+            checkMatePanel.children[1].children[0].innerText = "By Time"
+            checkMatePanel.style.display = "flex"
+            checkMatePanel.showModal();
+            checkMatePanel.style.opacity = "1"
+            chessBoard.style.filter = "blur(.5rem)"
+        }
+        totalSecs2 -= 1
+    }, 1000)
+}
+
 const resetBoard = () => {
-    checkThreat()
+    checkThreat(threatBoardWhite, threatBoardBlack)
+    let endGame = isEndGame()
     moveState = false
     prevPosition = []
     possibleSquares = [[]]
@@ -440,57 +483,18 @@ const resetBoard = () => {
 
     if (player == 1) {
         player = 2
-        clearInterval(interval1)
-        interval2 = setInterval(() => {
-            blackTime.children[0].innerText = Math.floor(totalSecs2 / 3600).toString() + ":"
-            let rem = totalSecs2 - Math.floor(totalSecs2 / 3600) * 3600
-            blackTime.children[1].innerText = Math.floor(rem / 60).toString() + ":"
-            rem = rem - Math.floor(rem / 60) * 60
-            blackTime.children[2].innerText = Math.floor(rem)
-            if (totalSecs2 == 0) {
-                clearInterval(interval1)
-                clearInterval(interval2)
-                let text = "White won"
-                checkMatePanel.children[0].children[0].innerText = text
-                checkMatePanel.children[1].children[0].innerText = "By Time"
-                checkMatePanel.style.display = "flex"
-                checkMatePanel.showModal();
-                checkMatePanel.style.opacity = "1"
-                chessBoard.style.filter = "blur(.5rem)"
-            }
-            totalSecs2 -= 1
-        }, 1000)
+        clearTimer(interval1, "White won")
         startGame.drawPieces()
     }
     else {
         player = 1
-        clearInterval(interval2)
-        interval1 = setInterval(() => {
-            whiteTime.children[0].innerText = Math.floor(totalSecs1 / 3600).toString() + ":"
-            let rem = totalSecs1 - Math.floor(totalSecs1 / 3600) * 3600
-            whiteTime.children[1].innerText = Math.floor(rem / 60).toString() + ":"
-            rem = rem - Math.floor(rem / 60) * 60
-            whiteTime.children[2].innerText = Math.floor(rem)
-            if (totalSecs1 == 0) {
-                clearInterval(interval1)
-                clearInterval(interval2)
-                let text = "Black won"
-                checkMatePanel.children[0].children[0].innerText = text
-                checkMatePanel.children[1].children[0].innerText = "By Time"
-                checkMatePanel.style.display = "flex"
-                checkMatePanel.showModal();
-                checkMatePanel.style.opacity = "1"
-                chessBoard.style.filter = "blur(.5rem)"
-            }
-            totalSecs1 -= 1
-        }, 1000)
+        clearTimer(interval2, "Black won")
         startGame.drawPieces()
     }
 
     console.log(threatBoardBlack)
     console.log(threatBoardWhite)
 
-    let endGame = isEndGame()
     if (endGame == 1) {
         let text = ""
         if (player == 1) text = "Black won"
@@ -546,11 +550,11 @@ squares.forEach(one => {
     })
 })
 
-const checkThreat = () => {
+const checkThreat = (whiteBoard, blackBoard) => {
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
-            threatBoardBlack[i][j] = '.'
-            threatBoardWhite[i][j] = '.'
+            blackBoard[i][j] = '.'
+            whiteBoard[i][j] = '.'
         }
     }
     for (let i = 0; i < 8; i++) {
@@ -566,34 +570,15 @@ const checkThreat = () => {
                 pieceMoves = callMoves(piece, j, i)
             }
             else {
-                if (player == 1) {
-                    if (cur[0] == 'b' && i - 1 >= 0) {
-                        if (j + 1 < 8) pieceMoves.push([i - 1, j + 1])
-                        if (j - 1 >= 0) pieceMoves.push([i - 1, j - 1])
-                    }
-                    else if (cur[0] == 'w' && i + 1 < 8) {
-                        if (j + 1 < 8) pieceMoves.push([i + 1, j + 1])
-                        if (j - 1 >= 0) pieceMoves.push([i + 1, j - 1])
-                    }
-                }
-                else {
-                    if (cur[0] == 'w' && i - 1 >= 0) {
-                        if (j + 1 < 8) pieceMoves.push([i - 1, j + 1])
-                        if (j - 1 >= 0) pieceMoves.push([i - 1, j - 1])
-                    }
-                    else if (cur[0] == 'b' && i + 1 < 8) {
-                        if (j + 1 < 8) pieceMoves.push([i + 1, j + 1])
-                        if (j - 1 >= 0) pieceMoves.push([i + 1, j - 1])
-                    }
-                }
+                pieceMoves = pawnThreat(cur[0], i, j, player)
             }
             for (let i of pieceMoves) {
                 if (i.length > 0) {
                     if (cur[0] == 'w') {
-                        threatBoardWhite[i[0]][i[1]] = 'w'
+                        whiteBoard[i[0]][i[1]] = 'w'
                     }
                     else {
-                        threatBoardBlack[i[0]][i[1]] = 'b'
+                        blackBoard[i[0]][i[1]] = 'b'
                     }
                 }
             }
@@ -620,6 +605,47 @@ const callMoves = (piece, x, y) => {
     }
     else if (piece == 'q') {
         arr = moves.queenMove(y, x)
+    }
+    return arr
+}
+
+const pawnThreat = (color, i, j, turn) => {
+    let arr = []
+    if (turn == 1) {
+        if (color == 'w' && i - 1 >= 0) {
+            if (j + 1 < 8 && board[i - 1][j + 1] != '.' && board[i - 1][j + 1] != color) {
+                arr.push([i - 1, j + 1])
+            }
+            if (j - 1 >= 0 && board[i - 1][j - 1] != '.' && board[i - 1][j - 1] != color) {
+                arr.push([i - 1, j - 1])
+            }
+        }
+        else if (color == 'b' && i + 1 < 8) {
+            if (j + 1 < 8 && board[i + 1][j + 1] != '.' && board[i + 1][j + 1] != color) {
+                arr.push([i + 1, j + 1])
+            }
+            if (j - 1 >= 0 && board[i + 1][j - 1] != '.' && board[i + 1][j - 1] != color) {
+                arr.push([i + 1, j - 1])
+            }
+        }
+    }
+    else {
+        if (color == 'b' && i - 1 >= 0) {
+            if (j + 1 < 8 && board[i - 1][j + 1] != '.' && board[i - 1][j + 1] != color) {
+                arr.push([i - 1, j + 1])
+            }
+            if (j - 1 >= 0 && board[i - 1][j - 1] != '.' && board[i - 1][j - 1] != color) {
+                arr.push([i - 1, j - 1])
+            }
+        }
+        else if (color == 'w' && i + 1 < 8) {
+            if (j + 1 < 8 && board[i + 1][j + 1] != '.' && board[i + 1][j + 1] != color) {
+                arr.push([i + 1, j + 1])
+            }
+            if (j - 1 >= 0 && board[i + 1][j - 1] != '.' && board[i + 1][j - 1] != color) {
+                arr.push([i + 1, j - 1])
+            }
+        }
     }
     return arr
 }
@@ -730,10 +756,8 @@ function checkPromote() {
     }
 }
 
-const validateMove = (x, y, array) => {
+const validateMove = (x, y, array, turn) => {
     let arr = []
-    let prevThreatWhite = threatBoardWhite
-    let prevThreatBlack = threatBoardBlack
     for (let q = 0; q < array.length; q++) {
         let a = array[q][0]
         let b = array[q][1]
@@ -741,10 +765,10 @@ const validateMove = (x, y, array) => {
         let prevPos2 = board[a][b]
         board[a][b] = board[y][x]
         board[y][x] = '.'
-        checkThreat()
+        checkThreat(threatBoardWhite, threatBoardBlack)
         let kingPos = null
-        let kingName
-        if (player == 1) kingName = "wk"
+        let kingName = ""
+        if (turn == 1) kingName = "wk"
         else kingName = "bk"
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
@@ -755,7 +779,7 @@ const validateMove = (x, y, array) => {
             }
             if (kingPos != null) break
         }
-        if (player == 1) {
+        if (turn == 1) {
             if (threatBoardBlack[kingPos[0]][kingPos[1]] != '.') {
                 arr.push(q)
             }
@@ -767,12 +791,11 @@ const validateMove = (x, y, array) => {
         }
         board[y][x] = prevPos1
         board[a][b] = prevPos2
+        checkThreat(threatBoardWhite, threatBoardBlack)
     }
     for (let i = 0; i < arr.length; i++) {
         array.splice(arr[i] - i, 1)
     }
-    threatBoardWhite = prevThreatWhite
-    threatBoardBlack = prevThreatBlack
 }
 
 //! Dragging pieces feature
