@@ -18,6 +18,7 @@
     <canvas id="canvas"></canvas>
     <audio class=" audio piece-move" src="./sounds/piece-move.mp3"></audio>
     <audio class=" audio piece-capture" src="./sounds/piece-capture.mp3"></audio>
+    <audio class=" audio piece-check" src="./sounds/move-check.mp3"></audio>
     <dialog class="checkmate-panel end-panel">
         <div class="wave">
             <h2 class="who-won">White Won</h2>
@@ -56,24 +57,35 @@
             <img src="./images/Chess_bdt45.svg" alt="bishop" data="b">
         </div>
     </dialog>
+
     <section class="chess-board">
 
     </section>
+
     <section class="data-panel">
         <div class="player2-place player-place">
             <div class="timer black">
-                <h1 class="time"><span class="hours"></span><span class="minutes"></span><span class="seconds"></span></h1>
+                <h1 class="time"><span class="hours"></span><span class="minutes"></span><span class="seconds"></span>
+                </h1>
             </div>
             <p class="name">Player 2</p>
         </div>
+
+        <div class="control-buttons">
+            <button class="take-back">Take back</button>
+            <button class="resign">Resign</button>
+            <button class="offer-draw">Draw</button>
+        </div>
+
         <div class="player1-place player-place">
             <p class="name">Player 1</p>
-            <div class="timer white">
-                <h1 class="time"><span class="hours"></span><span class="minutes"></span><span class="seconds"></span></h1>
+            <div class="timer white active-timer">
+                <h1 class="time"><span class="hours"></span><span class="minutes"></span><span class="seconds"></span>
+                </h1>
             </div>
         </div>
     </section>
-    
+
 </body>
 
 </html>

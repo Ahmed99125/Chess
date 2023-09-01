@@ -254,15 +254,15 @@ body {
 }
 
 .data-panel {
-    display:flex;
+    display: flex;
     flex-direction: column;
     justify-content: space-between;
     width: 300px;
     margin-left: 40px;
     position: relative;
-    height:70vh;
-    border:1px #111 solid;
-    zoom:1.1;
+    height: 70vh;
+    border: 1px #111 solid;
+    zoom: 1.1;
     background: #111;
     border-radius: 20px;
 }
@@ -271,36 +271,38 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    padding: 13px 17px;
     color: white;
 }
 
-.player-place * {
-    margin: 5px 10px;
+.player-place p {
+    margin: 5px 0;
 }
+
 .player-place span {
     margin: 0;
 }
-
 
 .timer {
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 10px;
-    padding: 10px;
-    width: 160px;
-    height:50px;
+    border-radius: 5px;
+    padding: 2px;
+    width: 125px;
+    height: 40px;
     justify-content: center;
     align-items: center;
     translate: -5px;
-}
-
-.timer.white {
-    background: #c2c2c2;
-    color: black;
-}
-
-.timer.black {
+    background-color: #333;
     color: white;
-    background: #444;
+}
+
+.time {
+    font-weight: 300;
+}
+
+.active-timer {
+    background-color: #eee;
+    color: black;
 }

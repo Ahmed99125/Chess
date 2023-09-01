@@ -8,7 +8,7 @@ const windowHeight = window.innerHeight
 let board = startGame.board
 let player = 1
 let checked = false
-let checkMate = false
+let captured = false
 let moveState = false
 let flip = true
 const promotionPanel = document.querySelector(".promotion-panel")
@@ -34,6 +34,7 @@ let threatBoardBlack = [
     [".", ".", ".", ".", ".", ".", ".", "."],
     [".", ".", ".", ".", ".", ".", ".", "."]
 ]
+let prevBoards = []
 let checkedSquares = [[]]
 let possibleSquares = [[]]
 let prevPosition = []
@@ -45,6 +46,7 @@ const canvas = document.querySelector("#canvas")
 const ctx = canvas.getContext('2d')
 const pieceMoveAudio = document.querySelector(".piece-move")
 const pieceCaptureAudio = document.querySelector(".piece-capture")
+const pieceCheckAudio = document.querySelector(".piece-check")
 let whiteCastle = [false, false, false]     //? King moved, right rook moved, left rook moved
 let blackCastle = [false, false, false]
 const checkMatePanel = document.querySelector(".checkmate-panel")
@@ -56,6 +58,8 @@ let minutes1 = 0
 let minutes2 = 0
 let seconds1 = 0
 let seconds2 = 0
+let whiteTimer = document.querySelector(".white")
+let blackTimer = document.querySelector(".black")
 let whiteTime = document.querySelector(".white").querySelector(".time")
 let blackTime = document.querySelector(".black").querySelector(".time")
 let totalSecs1 = hours1 * 3600 + minutes1 * 60 + seconds1
@@ -279,12 +283,12 @@ const isEndGame = () => {
                 let color = piece[0]
                 piece = piece.substring(1)
                 if (piece == 'p') {
-                    arr = pawnThreat(color , i, j, player)
+                    arr = pawnThreat(color, i, j, player)
 
                     if (moves.isValid(i + 1, j) && board[i + 1][j] == '.') {
                         arr.push([i + 1, j])
                     }
-                
+
                     if (moves.isValid(i + 2, j) && i == 6 && board[i + 2][j] == '.' && board[i + 1][j] == '.') {
                         arr.push([i + 2, j])
                     }
@@ -298,16 +302,11 @@ const isEndGame = () => {
                 validateMove(j, i, arr, turn)
                 if (color == 'b') kingPos = [0, 4]
                 else kingPos = [0, 3]
-                console.log(color, piece)
-                console.log(arr)
-                console.log(i, j)
                 numberOfMoves += arr.length
             }
-        }   
+        }
     }
 
-    console.log(numberOfMoves)
-    console.log(kingPos)
     if (numberOfMoves == 0) {
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
@@ -339,26 +338,30 @@ const checkCastling = () => {
     let castleInfo = []
     let threatBoard = []
     let kingPos = null
+    let king = ""
     let rightCastle = true
     let leftCastle = true
     if (player == 1) {
         castleInfo = whiteCastle
         kingPos = [7, 4]
         threatBoard = threatBoardBlack
+        king = "wk"
     }
     else {
         castleInfo = blackCastle
         kingPos = [7, 3]
         threatBoard = threatBoardWhite
+        king = "bk"
     }
 
     let x = kingPos[0]
     let y = kingPos[1]
 
-    for (let i = 0; i < 2; i++, y--) {
-        if ((board[x][y] != '.' && board[x][y][1] != 'k') || threatBoard[x][y] != '.') {
-            // console.log(threatBoard)
-            // console.log("no leftCastle")
+    console.log(board)
+
+    for (let i = 0; i < 3; i++, y--) {
+        if ((board[x][y] != '.' && board[x][y] != king) || threatBoard[x][y] != '.') {
+            console.log(x, y)
             leftCastle = false
             break
         }
@@ -366,11 +369,9 @@ const checkCastling = () => {
 
     y = kingPos[1]
 
-    for (let i = 0; i < 2; i++, y++) {
-        if ((board[x][y] != '.' && board[x][y][1] != 'k') || threatBoard[x][y] != '.') {
-            // console.log(threatBoard)
-            // console.log(x, y)
-            // console.log("no rightCastle")
+    for (let i = 0; i < 3; i++, y++) {
+        console.log(board[x][y])
+        if ((board[x][y] != '.' && board[x][y] != king) || threatBoard[x][y] != '.') {
             rightCastle = false
             break
         }
@@ -399,11 +400,9 @@ const makeMove = (e, x, y) => {
     let cell = e.target;
 
     if (e.target.tagName == "IMG") cell = cell.parentElement
-    if (board[y][x] != '.') {
-        pieceCaptureAudio.play()
-    } else pieceMoveAudio.play()
     prevPlays = []
 
+    prevBoards.push(board)
 
     board[y][x] = board[a][b]
     board[a][b] = '.'
@@ -453,28 +452,69 @@ const makeMove = (e, x, y) => {
 
 const clearTimer = (interval, text) => {
     clearInterval(interval)
-    interval2 = setInterval(() => {
-        blackTime.children[0].innerText = Math.floor(totalSecs2 / 3600).toString() + ":"
-        let rem = totalSecs2 - Math.floor(totalSecs2 / 3600) * 3600
-        blackTime.children[1].innerText = Math.floor(rem / 60).toString() + ":"
-        rem = rem - Math.floor(rem / 60) * 60
-        blackTime.children[2].innerText = Math.floor(rem)
-        if (totalSecs2 == 0) {
-            clearInterval(interval1)
-            clearInterval(interval2)
-            checkMatePanel.children[0].children[0].innerText = text
-            checkMatePanel.children[1].children[0].innerText = "By Time"
-            checkMatePanel.style.display = "flex"
-            checkMatePanel.showModal();
-            checkMatePanel.style.opacity = "1"
-            chessBoard.style.filter = "blur(.5rem)"
-        }
-        totalSecs2 -= 1
-    }, 1000)
+    if (interval == interval1) {
+        interval2 = setInterval(() => {
+            blackTime.children[0].innerText = Math.floor(totalSecs2 / 3600).toString();
+            blackTime.children[0].innerText.length == 1 ? blackTime.children[0].innerText = "0" + blackTime.children[0].innerText + ":" : blackTime.children[0].innerText = blackTime.children[0].innerText + ":"
+            let rem = totalSecs2 - Math.floor(totalSecs2 / 3600) * 3600
+            blackTime.children[1].innerText = Math.floor(rem / 60).toString()
+            blackTime.children[1].innerText.length == 1 ? blackTime.children[1].innerText = "0" + blackTime.children[1].innerText + ":" : blackTime.children[1].innerText = blackTime.children[1].innerText + ":"
+            rem = rem - Math.floor(rem / 60) * 60
+            blackTime.children[2].innerText = Math.floor(rem)
+            blackTime.children[2].innerText.length == 1 ? blackTime.children[2].innerText = "0" + blackTime.children[2].innerText : blackTime.children[2].innerText = blackTime.children[2].innerText
+            if (totalSecs2 == 0) {
+                checkMatePanel.children[0].children[0].innerText = text
+                checkMatePanel.children[1].children[0].innerText = "By Time"
+                checkMatePanel.style.display = "flex"
+                checkMatePanel.showModal();
+                checkMatePanel.style.opacity = "1"
+                chessBoard.style.filter = "blur(.5rem)"
+            }
+            totalSecs2 -= 1
+        }, 1000)
+        blackTimer.classList.add("active-timer")
+        whiteTimer.classList.remove("active-timer")
+    } else {
+        interval1 = setInterval(() => {
+            totalSecs1 -= 1
+            whiteTime.children[0].innerText = Math.floor(totalSecs1 / 3600).toString()
+            whiteTime.children[0].innerText.length == 1 ? whiteTime.children[0].innerText = "0" + whiteTime.children[0].innerText + ":" : whiteTime.children[0].innerText = whiteTime.children[0].innerText + ":"
+            let rem = totalSecs1 - Math.floor(totalSecs1 / 3600) * 3600
+            whiteTime.children[1].innerText = Math.floor(rem / 60).toString()
+            whiteTime.children[1].innerText.length == 1 ? whiteTime.children[1].innerText = "0" + whiteTime.children[1].innerText + ":" : whiteTime.children[1].innerText = whiteTime.children[1].innerText + ":"
+            rem = rem - Math.floor(rem / 60) * 60
+            whiteTime.children[2].innerText = Math.floor(rem)
+            whiteTime.children[2].innerText.length == 1 ? whiteTime.children[2].innerText = "0" + whiteTime.children[2].innerText : whiteTime.children[2].innerText = whiteTime.children[2].innerText
+            if (totalSecs1 == 0) {
+                checkMatePanel.children[0].children[0].innerText = text
+                checkMatePanel.children[1].children[0].innerText = "By Time"
+                checkMatePanel.style.display = "flex"
+                checkMatePanel.showModal();
+                checkMatePanel.style.opacity = "1"
+                chessBoard.style.filter = "blur(.5rem)"
+            }
+        }, 1000)
+        blackTimer.classList.remove("active-timer")
+        whiteTimer.classList.add("active-timer")
+    }
 }
 
 const resetBoard = () => {
     checkThreat(threatBoardWhite, threatBoardBlack)
+
+    console.log(board)
+    console.log(threatBoardWhite)
+    console.log(threatBoardBlack)
+    if (captured) {
+        pieceCaptureAudio.play()
+    }
+    else if (checked) {
+        pieceCheckAudio.play()
+    }
+    else {
+        pieceMoveAudio.play()
+    }
+
     let endGame = isEndGame()
     moveState = false
     prevPosition = []
@@ -491,9 +531,6 @@ const resetBoard = () => {
         clearTimer(interval2, "Black won")
         startGame.drawPieces()
     }
-
-    console.log(threatBoardBlack)
-    console.log(threatBoardWhite)
 
     if (endGame == 1) {
         let text = ""
@@ -551,6 +588,9 @@ squares.forEach(one => {
 })
 
 const checkThreat = (whiteBoard, blackBoard) => {
+    checked = false
+    let blackKingPos = null
+    let whiteKingPos = null
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
             blackBoard[i][j] = '.'
@@ -582,6 +622,22 @@ const checkThreat = (whiteBoard, blackBoard) => {
                     }
                 }
             }
+            if (cur == "wk") {
+                whiteKingPos = [i, j]
+            }
+            else if (cur == "bk") {
+                blackKingPos = [i, j]
+            }
+        }
+    }
+    if (player == 1) {
+        if (whiteBoard[blackKingPos[0]][blackKingPos[1]] != '.') {
+            checked = true
+        }
+    }
+    else {
+        if (blackBoard[whiteKingPos[0]][whiteKingPos[1]] != '.') {
+            checked = true
         }
     }
 }
@@ -829,6 +885,7 @@ document.addEventListener("mousedown", e => {
     imgs = chessBoard.querySelectorAll(".piece")
     imgs.forEach(one => {
         one.addEventListener("dragstart", e => {
+            clearEffects()
             let draggingX = e.target.parentElement.getAttribute("data") - 1
             let draggingY = e.target.parentElement.parentElement.getAttribute("data") - 1
             initiateMoves(draggingX, draggingY)
@@ -855,21 +912,32 @@ replayButton.addEventListener("click", () => {
     startGame.drawBoard(2)
 })
 
-whiteTime.children[0].innerText = hours1.toString() + ":"
-whiteTime.children[1].innerText = minutes1.toString() + ":"
+whiteTime.children[0].innerText = hours1.toString()
+whiteTime.children[0].innerText.length == 1 ? whiteTime.children[0].innerText = "0" + whiteTime.children[0].innerText + ":" : whiteTime.children[0].innerText = whiteTime.children[0].innerText + ":"
+whiteTime.children[1].innerText = minutes1.toString()
+whiteTime.children[1].innerText.length == 1 ? whiteTime.children[1].innerText = "0" + whiteTime.children[1].innerText + ":" : whiteTime.children[1].innerText = whiteTime.children[1].innerText + ":"
 whiteTime.children[2].innerText = seconds1.toString()
-blackTime.children[0].innerText = hours2.toString() + ":"
-blackTime.children[1].innerText = minutes2.toString() + ":"
+whiteTime.children[2].innerText.length == 1 ? whiteTime.children[2].innerText = "0" + whiteTime.children[2].innerText : whiteTime.children[2].innerText = whiteTime.children[2].innerText
+blackTime.children[0].innerText = hours2.toString()
+blackTime.children[0].innerText.length == 1 ? blackTime.children[0].innerText = "0" + blackTime.children[0].innerText + ":" : blackTime.children[0].innerText = blackTime.children[0].innerText + ":"
+blackTime.children[1].innerText = minutes2.toString()
+blackTime.children[1].innerText.length == 1 ? blackTime.children[1].innerText = "0" + blackTime.children[1].innerText + ":" : blackTime.children[1].innerText = blackTime.children[1].innerText + ":"
 blackTime.children[2].innerText = seconds2.toString()
+blackTime.children[2].innerText.length == 1 ? blackTime.children[2].innerText = "0" + blackTime.children[2].innerText : blackTime.children[2].innerText = blackTime.children[2].innerText
+
 totalSecs2 -= 1
 
 interval1 = setInterval(() => {
     totalSecs1 -= 1
-    whiteTime.children[0].innerText = Math.floor(totalSecs1 / 3600).toString() + ":"
+    whiteTime.children[0].innerText = Math.floor(totalSecs1 / 3600).toString()
+    whiteTime.children[0].innerText.length == 1 ? whiteTime.children[0].innerText = "0" + whiteTime.children[0].innerText + ":" : whiteTime.children[0].innerText = whiteTime.children[0].innerText + ":"
     let rem = totalSecs1 - Math.floor(totalSecs1 / 3600) * 3600
-    whiteTime.children[1].innerText = Math.floor(rem / 60).toString() + ":"
+    whiteTime.children[1].innerText = Math.floor(rem / 60).toString()
+    whiteTime.children[1].innerText.length == 1 ? whiteTime.children[1].innerText = "0" + whiteTime.children[1].innerText + ":" : whiteTime.children[1].innerText = whiteTime.children[1].innerText + ":"
+
     rem = rem - Math.floor(rem / 60) * 60
     whiteTime.children[2].innerText = Math.floor(rem)
+    whiteTime.children[2].innerText.length == 1 ? whiteTime.children[2].innerText = "0" + whiteTime.children[2].innerText : whiteTime.children[2].innerText = whiteTime.children[2].innerText
     if (totalSecs1 == 0) {
         clearInterval(interval1)
         clearInterval(interval2)
