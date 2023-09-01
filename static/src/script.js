@@ -50,8 +50,13 @@ const pieceCheckAudio = document.querySelector(".piece-check")
 let whiteCastle = [false, false, false]     //? King moved, right rook moved, left rook moved
 let blackCastle = [false, false, false]
 const checkMatePanel = document.querySelector(".checkmate-panel")
+const confermPanel = document.querySelector(".conferm-panel")
 const drawPanel = document.querySelector(".draw-panel")
 const replayButton = document.querySelector(".replay")
+const takeBackButton = document.querySelector(".take-back")
+const resignButton = document.querySelector(".resign")
+const drawButton = document.querySelector(".offer-draw")
+const confermButtons = document.querySelectorAll(".conferm-button")
 let hours1 = 1
 let hours2 = 1
 let minutes1 = 0
@@ -232,6 +237,7 @@ squares.forEach((one) => {
             makeMove(e, x, y)
 
             if (flip == true) resetBoard()
+            audioEffects()
         }
     })
 })
@@ -289,10 +295,9 @@ const isEndGame = () => {
                         arr.push([i + 1, j])
                     }
 
-                    if (moves.isValid(i + 2, j) && i == 6 && board[i + 2][j] == '.' && board[i + 1][j] == '.') {
+                    if (moves.isValid(i + 2, j) && i == 1 && board[i + 2][j] == '.' && board[i + 1][j] == '.') {
                         arr.push([i + 2, j])
                     }
-
                     validateMove(j, i, arr, turn)
                     numberOfMoves += arr.length
                 }
@@ -357,11 +362,8 @@ const checkCastling = () => {
     let x = kingPos[0]
     let y = kingPos[1]
 
-    console.log(board)
-
     for (let i = 0; i < 3; i++, y--) {
         if ((board[x][y] != '.' && board[x][y] != king) || threatBoard[x][y] != '.') {
-            console.log(x, y)
             leftCastle = false
             break
         }
@@ -370,7 +372,6 @@ const checkCastling = () => {
     y = kingPos[1]
 
     for (let i = 0; i < 3; i++, y++) {
-        console.log(board[x][y])
         if ((board[x][y] != '.' && board[x][y] != king) || threatBoard[x][y] != '.') {
             rightCastle = false
             break
@@ -402,7 +403,16 @@ const makeMove = (e, x, y) => {
     if (e.target.tagName == "IMG") cell = cell.parentElement
     prevPlays = []
 
-    prevBoards.push(board)
+    prevBoards.push([])
+
+    for (let i = 0; i < 8; i++) {
+        prevBoards[prevBoards.length-1].push([])
+        for (let j = 0; j < 8; j++) {
+            prevBoards[prevBoards.length-1][i].push(board[i][j])
+        }
+    }
+
+    console.log(prevBoards)
 
     board[y][x] = board[a][b]
     board[a][b] = '.'
@@ -499,12 +509,7 @@ const clearTimer = (interval, text) => {
     }
 }
 
-const resetBoard = () => {
-    checkThreat(threatBoardWhite, threatBoardBlack)
-
-    console.log(board)
-    console.log(threatBoardWhite)
-    console.log(threatBoardBlack)
+const audioEffects = () => {
     if (captured) {
         pieceCaptureAudio.play()
     }
@@ -514,6 +519,10 @@ const resetBoard = () => {
     else {
         pieceMoveAudio.play()
     }
+}
+
+const resetBoard = () => {
+    checkThreat(threatBoardWhite, threatBoardBlack)
 
     let endGame = isEndGame()
     moveState = false
@@ -877,6 +886,7 @@ squares.forEach(one => {
         if (moveState == true && canMoveTo(x, y)) {
             makeMove(e, x, y)
             if (flip == true) resetBoard()
+            audioEffects()
         }
     })
 })
@@ -950,3 +960,93 @@ interval1 = setInterval(() => {
         chessBoard.style.filter = "blur(.5rem)"
     }
 }, 1000)
+
+takeBackButton.addEventListener("click", () => {
+    if (prevBoards.length == 0) {
+        return
+    }
+
+    for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+            board[i][j] = prevBoards[prevBoards.length-1][i][j]
+        }
+    }
+    console.log(board)
+    prevBoards.pop()
+    board.reverse()
+
+    for (let row of board) {
+        row.reverse()
+    }
+
+    audioEffects()
+
+    if (player == 1) {
+        player = 2
+        clearTimer(interval1, "White won")
+        startGame.drawPieces()
+    }
+    else {
+        player = 1
+        clearTimer(interval2, "Black won")
+        startGame.drawPieces()
+    }
+})
+
+resignButton.addEventListener("click", () => {
+    let text = "Are you sure you want to resign?"
+    confermPanel.children[0].children[0].innerText = text
+    confermPanel.style.display = "flex"
+    confermPanel.showModal();
+    confermPanel.style.opacity = "1"
+    chessBoard.style.filter = "blur(.5rem)"
+
+    confermAction("resign")
+})
+
+drawButton.addEventListener("click", () => {
+    let text = "Are you sure you want to draw?"
+    confermPanel.children[0].children[0].innerText = text
+    confermPanel.style.display = "flex"
+    confermPanel.showModal();
+    confermPanel.style.opacity = "1"
+    chessBoard.style.filter = "blur(.5rem)"
+
+    confermAction("draw")
+})
+
+const confermAction = (action) => {
+    console.log(confermButtons)
+    confermButtons.forEach(one => {
+        one.addEventListener("click", e => {
+            confermPanel.close()
+            confermPanel.style.opacity = "0 "
+            chessBoard.style.filter = "blur(0rem)"
+            if (e.target.classList.contains("no-conferm")) {
+                confermPanel.style.display = "none"
+            }
+            else {
+                if (action == "resign") {
+                    let text = ""
+                    if (player == 1) text = "Black won"
+                    else text = "White won"
+                    checkMatePanel.children[0].children[0].innerText = text
+                    checkMatePanel.children[1].children[0].innerText = "By Resign"
+                    checkMatePanel.style.display = "flex"
+                    checkMatePanel.showModal();
+                    checkMatePanel.style.opacity = "1"
+                    chessBoard.style.filter = "blur(.5rem)"
+                }
+                else if (action == "draw") {
+                    let text = "Draw"
+                    checkMatePanel.children[0].children[0].innerText = text
+                    checkMatePanel.children[1].children[0].innerText = "By Agreement"
+                    checkMatePanel.style.display = "flex"
+                    checkMatePanel.showModal();
+                    checkMatePanel.style.opacity = "1"
+                    chessBoard.style.filter = "blur(.5rem)"
+                }
+            }
+        })
+    })
+}

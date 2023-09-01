@@ -11,7 +11,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #333;
+    background: #111111;
     position: relative;
 }
 
@@ -253,26 +253,38 @@ body {
     scale: 1.2;
 }
 
+.conferm-panel {
+    font-weight: 300;
+    width: 400px;
+    height: 300px;
+}
+
+.conferm-text h2{
+    font-size: 25px;
+    font-weight: 300;
+}
+
+.conferm-buttons button {
+    font-weight: 400;
+    font-size: 18px;
+}
+
 .data-panel {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 300px;
-    margin-left: 40px;
+    margin-left: 15px;
     position: relative;
     height: 70vh;
-    border: 1px #111 solid;
     zoom: 1.1;
-    background: #111;
-    border-radius: 20px;
 }
 
 .player-place {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 13px 17px;
-    color: white;
+    padding: 13px 0 13px 10px;
+    color: rgb(205, 213, 229);
 }
 
 .player-place p {
@@ -294,8 +306,7 @@ body {
     justify-content: center;
     align-items: center;
     translate: -5px;
-    background-color: #333;
-    color: white;
+    background-color: rgb(16, 19, 43);
 }
 
 .time {
@@ -303,6 +314,36 @@ body {
 }
 
 .active-timer {
-    background-color: #eee;
-    color: black;
+    background-color: rgb(173, 173, 188);
+    color: rgb(15, 16, 25);
+}
+
+.control-buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 20%;
+    margin: 0 7px;
+}
+
+.control-buttons button {
+    margin: 3px 0;
+    width: 35px;
+    height: 35px;
+    background-color: rgb(36, 35, 38);
+    border: none;
+    cursor: pointer;
+    transition: scale .3s;
+    z-index: 999;
+}
+
+.control-buttons button svg {
+    fill: rgb(183, 183, 194);
+    width: 100%;
+    height: 100%;
+}
+
+.control-buttons button:hover {
+    scale: 1.1;
 }
