@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="./index.css">
+    <script src="http://localhost:4000/socket.io/socket.io.js" defer></script>
+    <script type="module" src="./src/index.js" defer></script>
+</head>
+
+<body>
+    <div class="header">
+        <h1 class="website-name">Nochess</h1>
+        <div class="cont">
+            <h2 class="user-name">Hi</h2>
+            <p class="logout">Logout</p>
+        </div>
+    </div>
+    <div class="main">
+        <div class="game-types">
+            <div class="row">
+                <div class="game" data="1">
+                    <h2 class="time">1:00</h2>
+                    <h2 class="type">Bullet</h2>
+                </div>
+                <div class="game" data="2">
+                    <h2 class="time">2:00</h2>
+                    <h2 class="type">Bullet</h2>
+                </div>
+                <div class="game" data="3">
+                    <h2 class="time">3:00</h2>
+                    <h2 class="type">Blitz</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="game" data="4">
+                    <h2 class="time">5:00</h2>
+                    <h2 class="type">Blitz</h2>
+                </div>
+                <div class="game" data="5">
+                    <h2 class="time">7:00</h2>
+                    <h2 class="type">Blitz</h2>
+                </div>
+                <div class="game" data="6">
+                    <h2 class="time">8:00</h2>
+                    <h2 class="type">Blitz</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="game" data="7">
+                    <h2 class="time">10:00</h2>
+                    <h2 class="type">Rapid</h2>
+                </div>
+                <div class="game" data="8">
+                    <h2 class="time">15:00</h2>
+                    <h2 class="type">Rapid</h2>
+                </div>
+                <div class="game" data="9">
+                    <h2 class="time">25:00</h2>
+                    <h2 class="type">Rapid</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="game" data="10">
+                    <h2 class="time">30:00</h2>
+                    <h2 class="type">Classic</h2>
+                </div>
+                <div class="game" data="11">
+                    <h2 class="time">1:00:00</h2>
+                    <h2 class="type">Classic</h2>
+                </div>
+                <div class="game" data="12">
+                    <h2 class="time">1:30:00</h2>
+                    <h2 class="type">Classic</h2>
+                </div>
+            </div>
+        </div>
+        <div class="buttons">
+            <button class="create-game">Create a game</button>
+            <button class="same-device">Play on the same device</button>
+        </div>
+    </div>
+</body>
+
+</html>
