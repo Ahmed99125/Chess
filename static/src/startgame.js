@@ -1,6 +1,7 @@
 let board = [[]];
 
 const chessBoard = document.querySelector(".chess-board")
+const dataPanel = document.querySelector(".data-panel")
 const rows = document.querySelectorAll(".row")
 const squares = document.querySelectorAll(".square")
 const svgs = {
@@ -17,6 +18,20 @@ const svgs = {
     "br": "./images/Chess_rdt45.svg",
     "bp": "./images/Chess_pdt45.svg"
 }
+
+let d = Math.min(document.documentElement.clientHeight * 7.5/10, (document.documentElement.clientWidth) * 8/10)
+if (document.documentElement.clientWidth >= 1000) {
+    d = Math.min(document.documentElement.clientHeight * 7.5/10, (document.documentElement.clientWidth - dataPanel.clientWidth) * 8/10)
+}
+chessBoard.style.height = `${d}px`
+chessBoard.style.width = chessBoard.style.height
+if (document.documentElement.clientWidth >= 1000) {
+    dataPanel.style.height = chessBoard.style.height
+}
+else {
+    dataPanel.style.width = chessBoard.style.width
+}
+
 
 const setBoard = (p) => {
     if (p == 1) {
@@ -504,7 +519,6 @@ const drawBoard = (p) => {
           `
     }
     drawPieces()
-    // setBoard(2)
 }
 
 let first = true
@@ -536,7 +550,7 @@ const drawPieces = () => {
                 }
             }
         }
-    }, 60)
+        }, 60)
 }
 
 export { board, drawBoard, chessBoard, rows, squares, drawPieces, setBoard };

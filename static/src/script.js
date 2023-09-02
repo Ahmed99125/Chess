@@ -265,11 +265,12 @@ const initiateMoves = (x, y) => {
             }
         }
 
+        
+        validateMove(x, y, possibleSquares, player)
+        
         if (piece == 'k') {
             checkCastling()
         }
-
-        validateMove(x, y, possibleSquares, player)
 
         addEffects()
     }
@@ -369,6 +370,10 @@ const checkCastling = () => {
         }
     }
 
+    if (player == 1 && board[x][y] != '.') {
+        leftCastle = false
+    }
+
     y = kingPos[1]
 
     for (let i = 0; i < 3; i++, y++) {
@@ -376,6 +381,10 @@ const checkCastling = () => {
             rightCastle = false
             break
         }
+    }
+
+    if (player == 2 && board[x][y] != '.') {
+        rightCastle = false
     }
 
     y = kingPos[1]
@@ -400,7 +409,10 @@ const makeMove = (e, x, y) => {
     }
     let cell = e.target;
 
-    if (e.target.tagName == "IMG") cell = cell.parentElement
+    if (e.target.tagName == "IMG") {
+        cell = cell.parentElement
+        captured = true
+    }
     prevPlays = []
 
     prevBoards.push([])
@@ -411,9 +423,7 @@ const makeMove = (e, x, y) => {
             prevBoards[prevBoards.length-1][i].push(board[i][j])
         }
     }
-
-    console.log(prevBoards)
-
+    
     board[y][x] = board[a][b]
     board[a][b] = '.'
     prevPlays.push([y, x])
@@ -510,11 +520,12 @@ const clearTimer = (interval, text) => {
 }
 
 const audioEffects = () => {
-    if (captured) {
-        pieceCaptureAudio.play()
-    }
-    else if (checked) {
+    if (checked) {
         pieceCheckAudio.play()
+    }
+    else if (captured) {
+        pieceCaptureAudio.play()
+        captured = false
     }
     else {
         pieceMoveAudio.play()
@@ -557,9 +568,6 @@ const resetBoard = () => {
         drawMatePanel.showModal();
         checkMatePanel.style.opacity = "1"
         chessBoard.style.filter = "blur(.5rem)"
-    }
-    else if (endGame == 0) {
-        console.log("game is on")
     }
 
     if (enpassant.length > 0) {
@@ -865,8 +873,6 @@ const validateMove = (x, y, array, turn) => {
 
 //! Dragging pieces feature
 
-let draggingCan = []
-
 squares.forEach(one => {
     one.addEventListener("dragover", e => {
         e.preventDefault()
@@ -971,7 +977,6 @@ takeBackButton.addEventListener("click", () => {
             board[i][j] = prevBoards[prevBoards.length-1][i][j]
         }
     }
-    console.log(board)
     prevBoards.pop()
     board.reverse()
 
@@ -979,7 +984,7 @@ takeBackButton.addEventListener("click", () => {
         row.reverse()
     }
 
-    audioEffects()
+    pieceMoveAudio.play()
 
     if (player == 1) {
         player = 2
@@ -1016,7 +1021,6 @@ drawButton.addEventListener("click", () => {
 })
 
 const confermAction = (action) => {
-    console.log(confermButtons)
     confermButtons.forEach(one => {
         one.addEventListener("click", e => {
             confermPanel.close()
