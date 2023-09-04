@@ -19,8 +19,22 @@ const svgs = {
     "bp": "./images/Chess_pdt45.svg"
 }
 
+let d = Math.min(document.documentElement.clientHeight * 7.5/10, (document.documentElement.clientWidth) * 8/10)
+if (document.documentElement.clientWidth >= 1000) {
+    d = Math.min(document.documentElement.clientHeight * 7.5/10, (document.documentElement.clientWidth - dataPanel.clientWidth) * 8/10)
+}
+chessBoard.style.height = `${d}px`
+chessBoard.style.width = chessBoard.style.height
+if (document.documentElement.clientWidth >= 1000) {
+    dataPanel.style.height = chessBoard.style.height
+    dataPanel.style.width = ""
+}
+else {
+    dataPanel.style.width = chessBoard.style.width
+    dataPanel.style.height = ""
+}
+
 window.addEventListener("resize", e => {
-    console.log("nodjf")
     let d = Math.min(document.documentElement.clientHeight * 7.5/10, (document.documentElement.clientWidth) * 8/10)
     if (document.documentElement.clientWidth >= 1000) {
         d = Math.min(document.documentElement.clientHeight * 7.5/10, (document.documentElement.clientWidth - dataPanel.clientWidth) * 8/10)
