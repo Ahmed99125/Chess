@@ -530,6 +530,8 @@ const audioEffects = () => {
     else {
         pieceMoveAudio.play()
     }
+    checked = false
+    captured = false
 }
 
 const resetBoard = () => {
