@@ -551,6 +551,15 @@ const drawPieces = () => {
             }
         }
         first = false
+
+        const letters = document.querySelectorAll(".c")
+
+        for (let i = 0; i < 4; i++) {
+            let tmp = letters[i].innerHTML
+            letters[i].innerHTML = letters[letters.length-1-i].innerHTML
+            letters[letters.length-1-i].innerHTML = tmp
+        }
+
         for (let i = 0; i < 8; ++i) {
             for (let j = 0; j < 8; ++j) {
                 let piece = board[7 - i][7 - j]
