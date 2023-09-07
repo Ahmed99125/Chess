@@ -69,8 +69,9 @@ let whiteTime = document.querySelector(".white").querySelector(".time")
 let blackTime = document.querySelector(".black").querySelector(".time")
 let totalSecs1 = hours1 * 3600 + minutes1 * 60 + seconds1
 let totalSecs2 = hours2 * 3600 + minutes2 * 60 + seconds2
-let interval1 = null;
-let interval2 = null;
+let interval1 = null
+let interval2 = null
+let curInterval = null
 
 //! Add the canvas functionality to draw arrows.
 
@@ -92,9 +93,9 @@ document.onkeydown = function (e) {
 };
 
 //! Uncomment this when finish developing.
-// document.addEventListener("contextmenu", e => {
-//     e.preventDefault()
-// })
+document.addEventListener("contextmenu", e => {
+    e.preventDefault()
+})
 
 document.onkeyup = function (e) {
     arrowColor = 1
@@ -471,7 +472,8 @@ const makeMove = (e, x, y) => {
 }
 
 const clearTimer = (interval, text) => {
-    clearInterval(interval)
+    clearInterval(interval1)
+    clearInterval(interval2)
     if (interval == interval1) {
         interval2 = setInterval(() => {
             blackTime.children[0].innerText = Math.floor(totalSecs2 / 3600).toString();
@@ -546,11 +548,13 @@ const resetBoard = () => {
     if (player == 1) {
         player = 2
         clearTimer(interval1, "White won")
+        curInterval = interval1
         startGame.drawPieces()
     }
     else {
         player = 1
         clearTimer(interval2, "Black won")
+        curInterval = interval2
         startGame.drawPieces()
     }
 
@@ -996,6 +1000,8 @@ takeBackButton.addEventListener("click", () => {
 })
 
 resignButton.addEventListener("click", () => {
+    clearInterval(interval1)
+    clearInterval(interval2)
     let text = "Are you sure you want to resign?"
     confermPanel.children[0].children[0].innerText = text
     confermPanel.style.display = "flex"
@@ -1025,6 +1031,10 @@ const confermAction = (action) => {
             chessBoard.style.filter = "blur(0rem)"
             if (e.target.classList.contains("no-conferm")) {
                 confermPanel.style.display = "none"
+                console.log(curInterval)
+                console.log(interval1)
+                console.log(interval2)
+                clearTimer(curInterval)
             }
             else {
                 if (action == "resign") {
