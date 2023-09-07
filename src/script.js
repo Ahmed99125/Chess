@@ -1031,9 +1031,6 @@ const confermAction = (action) => {
             chessBoard.style.filter = "blur(0rem)"
             if (e.target.classList.contains("no-conferm")) {
                 confermPanel.style.display = "none"
-                console.log(curInterval)
-                console.log(interval1)
-                console.log(interval2)
                 clearTimer(curInterval)
             }
             else {
